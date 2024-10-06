@@ -1,11 +1,10 @@
 # Three Tier Application
-This application uses a Terraform to deploy a three tier application
 
 This is an updated code from the original code: [AWS Three Tier Web Architecture Workshop](https://github.com/aws-samples/aws-three-tier-web-architecture-workshop/tree/main)
 
 
 ## Application code
-The `appliation-code` directory contains source codes for the `app-tier` and `web-tier`
+This contains source codes for the `app-tier` and `web-tier`
 
 ## Getting Started
 - On the web-tier instance, update `nginx.conf` with the internal loadbalancer dns.
