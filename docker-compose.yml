@@ -1,0 +1,68 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./web-tier
+      dockerfile: Dockerfile
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend 
+    networks:
+      - app_network
+  mysql:
+    image: mysql:5.7
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Password.1
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: willy
+      MYSQL_PASSWORD: Password.1
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"     
+    healthcheck:
+      test: ["CMD", "mysqladmin", "-u", "willy", "-pPassword.1", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./app-tier
+      dockerfile: Dockerfile
+    container_name: backend
+    environment:
+      - DB_HOST=mysql_db
+      - DB_USER=willy
+      - DB_PWD=Password.1
+      - DB_DATABASE=mydatabase
+    # volumes:
+    #   - ./app-tier:/usr/src/app  # Mount local backend code to the container
+    #   - /usr/src/app/node_modules  # Persist node_modules in the container
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    networks:
+      - app_network
+    
+
+
+   
+
+networks:
+  app_network:
+    
+
+volumes:
+  mysql_data:
+  

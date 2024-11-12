@@ -8,6 +8,8 @@ const fetch = require('node-fetch');
 
 const app = express();
 const port = 4000;
+const MAX_RETRIES = 5;
+let attempts = 0;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -30,10 +32,19 @@ const db = mysql.createConnection({
 
   db.connect((err) => {
     if (err) {
-      console.error('Error connecting to the database:', err);
-      return;
-    }
-    console.log('Connected to the MySQL database.');
+        console.error(`Error connecting to database: ${err}`);
+        attempts++;
+        if (attempts <= MAX_RETRIES) {
+          console.log(`Retrying connection (attempt ${attempts})...`);
+          setTimeout(connectWithRetry, 10000); // Retry after 5 seconds
+        } else {
+          console.error('Max retries reached, could not connect to database.');
+          process.exit(1);
+        }
+      } else {
+        console.log('Connected to the database successfully');
+        // Proceed with your application logic
+      }
   });
 
 // Function to create table if it doesn't exist
