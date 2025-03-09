@@ -15,12 +15,12 @@ services:
   mysql:
     image: mysql:5.7
     container_name: mysql_db
-    restart: unless-stopped
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Password.1
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: willy
-      MYSQL_PASSWORD: Password.1
+      - MYSQL_ROOT_PASSWORD=Password.1
+      - MYSQL_DATABASE=mydatabase
+      - MYSQL_USER=willy
+      - MYSQL_PASSWORD=Password.1
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
@@ -44,9 +44,6 @@ services:
       - DB_USER=willy
       - DB_PWD=Password.1
       - DB_DATABASE=mydatabase
-    # volumes:
-    #   - ./app-tier:/usr/src/app  # Mount local backend code to the container
-    #   - /usr/src/app/node_modules  # Persist node_modules in the container
     depends_on:
       mysql:
         condition: service_healthy

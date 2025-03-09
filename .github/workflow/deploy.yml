@@ -1,0 +1,48 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # Define application directory
+            APP_DIR="/home/${{ secrets.EC2_USERNAME }}/myapp"
+            
+            # Create application directory if it doesn't exist
+            mkdir -p $APP_DIR
+            
+            # Navigate to application directory
+            cd $APP_DIR
+            
+            # Clone or update repository
+            if [ -d "$APP_DIR/.git" ]; then
+              echo "Updating existing repository..."
+              git pull origin main
+            else
+              echo "Cloning repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            fi
+            
+        
+            # Run docker-compose
+            echo "Starting application with Docker Compose..."
+            docker-compose down || true
+            docker-compose up -d
+            
+
+          EOF
