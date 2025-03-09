@@ -40,7 +40,7 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     environment:
-      - DB_HOST=mysql_db
+      - DB_HOST=mysql
       - DB_USER=willy
       - DB_PWD=Password.1
       - DB_DATABASE=mydatabase
