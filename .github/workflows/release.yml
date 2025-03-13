@@ -22,6 +22,7 @@ jobs:
         env:
           PREVIOUS_TAG: ${{ steps.tag_version.outputs.previous_tag }}
           NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -52,8 +53,6 @@ jobs:
               releaseBody += `### #${pr.number}: ${pr.title}\n\n${pr.body}\n\n---\n\n`;
             }
             core.setOutput('body', releaseBody);
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create GitHub release
         uses: ncipollo/release-action@v1
         with:
