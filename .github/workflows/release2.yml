@@ -1,7 +1,18 @@
-release:
+name: Branch Tagging2
+on:
+  pull_request:
+    types:
+      - closed  # Runs only when a PR is closed (merged or not)
+    branches:
+      - main
+permissions:
+  contents: write  # Required for pushing tags and creating releases  
+
+jobs:
+  release:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: build_and_deploy
+    # needs: build_and_deploy
     permissions:
       contents: write
       issues: write
