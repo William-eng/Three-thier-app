@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest #this is the runner
     timeout-minutes: 10
     # needs: build_and_deploy
     permissions:
