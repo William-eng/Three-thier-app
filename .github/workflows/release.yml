@@ -16,29 +16,48 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           commit_sha: ${{ secrets.GITHUB_SHA }}
-      - name: Create a GitHub release
+      - name: Generate release notes from PR descriptions
+        id: generate_release_notes
+        uses: actions/github-script@v6
+        env:
+          PREVIOUS_TAG: ${{ steps.tag_version.outputs.previous_tag }}
+          NEW_TAG: ${{ steps.tag_version.outputs.new_tag }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const baseTag = process.env.PREVIOUS_TAG;
+            const headTag = process.env.NEW_TAG;
+            // Get comparison between tags
+            const compareResponse = await github.rest.repos.compareCommits({
+              owner,
+              repo,
+              base: baseTag,
+              head: headTag,
+            });
+            // Extract PR numbers from merge commits
+            const prNumbers = new Set();
+            for (const commit of compareResponse.data.commits) {
+              const prMatch = commit.commit.message.match(/Merge pull request #(\d+)/);
+              if (prMatch) prNumbers.add(prMatch[1]);
+            }
+            // Fetch PR details and format release notes
+            let releaseBody = '';
+            for (const prNumber of prNumbers) {
+              const prResponse = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber,
+              });
+              const pr = prResponse.data;
+              releaseBody += `### #${pr.number}: ${pr.title}\n\n${pr.body}\n\n---\n\n`;
+            }
+            core.setOutput('body', releaseBody);
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
-          tag_prefix : v
-      - name: Parse PR for Release Information
-        id: parse_pr
-        run: |
-          # Extract release title from PR
-          if [[ "${{ github.event.pull_request.title }}" =~ Release.*:\ *(.*) ]]; then
-            FEATURE_TITLE="${BASH_REMATCH[1]}"
-          else
-            FEATURE_TITLE="Production Update"
-          fi
-          # Parse PR body for "What's New" section
-          PR_BODY="${{ github.event.pull_request.body }}"
-          WHATS_NEW=""
-          if [[ "$PR_BODY" =~ '## What'\''s New'([\s\S]*?)($|##) ]]; then
-            WHATS_NEW="${BASH_REMATCH[1]}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "feature_title=$FEATURE_TITLE" >> $GITHUB_OUTPUT
-          # Format the what's new content to a file
-          echo "$WHATS_NEW" > whats_new.txt
+          body: ${{ steps.generate_release_notes.outputs.body }}
+          tag_prefix: v
