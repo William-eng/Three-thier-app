@@ -1,12 +1,9 @@
 name: Milestone Closure
 
 on:
-  push:
-    branches:
-      - main
   milestone:
     types: [closed]
-  workflow_dispatch:  # Allows manual execution for debugging
+
 
 permissions:
   contents: write
