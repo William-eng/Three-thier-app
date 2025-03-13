@@ -28,8 +28,8 @@ Step 3
 <!-- Add screenshots or GIFs to demonstrate the changes if applicable. --> 
 :memo: Linked Issues
 
-<!-- Link any related issues or tasks using `Fixes #issue_number` or `Closes #issue_number`. -->
-Closes #123
+<!-- Link any related issues or tasks using `Fixes #issue_number` or
+`Closes #issue_number`. Example: Closes #42 -->
 
 :speech_balloon: Additional Notes
 
