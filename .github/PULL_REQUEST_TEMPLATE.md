@@ -1,58 +1,32 @@
-:clipboard: PR Title Format
-Please follow Conventional Commits for the PR title to ensure compatibility with Semantic Release.
- Format: <type>(scope): description
- Examples:
-feat(api): add user authentication endpoint
-fix(ui): resolve button alignment issue
-chore(deps): update dependencies
+# Pull Request Template
 
-:rocket: Description
+## Description
+<!-- Please include a summary of the change and the issue it fixes. -->
 
-<!-- Provide a clear and concise description of the changes made in this PR. Include any background context, what problem it solves, and any additional information that could help reviewers. --> 
-:white_check_mark: Checklist
- My code follows the style guidelines of this project.
- I have performed a self-review of my code.
- I have added tests that prove my fix is effective or that my feature works.
- I have added necessary documentation (if applicable).
- My changes follow the Conventional Commits format for Semantic Release.
+## Related Issues
+<!-- If this PR addresses an issue, please link it here using the format: Fixes #issue_number -->
 
-:test_tube: How to Test
+## Changes
+- [ ] Added/Updated GitHub Actions workflow for release
+- [ ] Installed necessary dependencies
+- [ ] Integrated semantic-release for automated versioning and publishing
+- [ ] Configured permissions for contents, issues, and pull requests
+- [ ] Triggered generation of release notes
 
-<!-- Provide clear steps on how a reviewer can test your changes. -->
-Step 1
-Step 2
-Step 3
+## How Has This Been Tested?
+<!-- Describe the tests that were run to verify your changes. Provide instructions so that reviewers can reproduce them. -->
 
-:camera_with_flash: Screenshots (if applicable)
+## Checklist
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code where necessary
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings
+- [ ] Any dependent changes have been merged and published
 
-<!-- Add screenshots or GIFs to demonstrate the changes if applicable. --> 
-:memo: Linked Issues
+## Release Notes
+<!-- Describe the key highlights of this release. Semantic Release will generate a full changelog. -->
 
-<!-- Link any related issues or tasks using `Fixes #issue_number` or
-`Closes #issue_number`. Example: Closes #42 -->
-
-:speech_balloon: Additional Notes
-
-<!-- Add any other context or information here. --> 
-:bookmark: Types of Changes
-
-<!-- Choose one or more of the following types of changes based on the Conventional Commits format: -->
-:rocket: feat – A new feature
-:bug: fix – A bug fix
-:memo: docs – Documentation updates
-:art: style – Code style changes (formatting, linting, etc.)
-:recycle: refactor – Code refactoring without functional changes
-:rotating_light: test – Adding or updating tests
-:construction: chore – Maintenance tasks, CI/CD, tooling updates
-
-
-
-
-
-
-
-
-
-
-
+## Additional Notes
+<!-- Add any other relevant information or context here. -->
 
