@@ -1,0 +1,41 @@
+name: Release
+"on":
+  push:
+    branches:
+      - main
+  
+permissions:
+  contents: write # for checkout  
+
+jobs:
+  release:
+    runs-on: ubuntu-latest #this is the runner
+    timeout-minutes: 10
+    
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install depedencies
+        run: pnpm install --no-frozen-lockfile #this is demilade
+      - name: Install semantic-release and plugins
+        run: pnpm add semantic-release @semantic-release/git @semantic-release/github --save-dev
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpx semantic-release
