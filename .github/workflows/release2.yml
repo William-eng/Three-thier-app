@@ -19,12 +19,12 @@ jobs:
       - name: Parse PR for Release Information
         id: parse_pr
         run: |
-          # Extract version from PR title or package.json
-          if [[ "${{ github.event.pull_request.title }}" =~ Release.*([0-9]+\.[0-9]+(\.[0-9]+)?) ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-          else
-            VERSION=$(node -p "require('./package.json').version")
-          fi
+          # # Extract version from PR title or package.json
+          # if [[ "${{ github.event.pull_request.title }}" =~ Release.*([0-9]+\.[0-9]+(\.[0-9]+)?) ]]; then
+          #   VERSION="${BASH_REMATCH[1]}"
+          # else
+          #   VERSION=$(node -p "require('./package.json').version")
+          # fi
           
           # Extract release title from PR
           if [[ "${{ github.event.pull_request.title }}" =~ Release.*:\ *(.*) ]]; then
@@ -87,7 +87,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch' || github.event.pull_request.merged == true
         uses: softprops/action-gh-release@v1
         with:
-          tag: v${{ steps.parse_pr.outputs.version }}
+          tag: ${{ steps.tag_version.outputs.new_tag }}
           name: "E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}"
           body: release_notes.md
           draft: false
