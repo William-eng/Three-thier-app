@@ -84,13 +84,14 @@ jobs:
           EOF
           
       - name: Create GitHub Release
-        if: github.event_name != 'workflow_dispatch' || github.event.pull_request.merged == true
+        if: github.event_name != 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.parse_pr.outputs.version }}
           name: E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}
-          body_path: release_notes.md
+          body_path: release-notes.md
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
