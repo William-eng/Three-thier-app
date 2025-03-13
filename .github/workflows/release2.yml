@@ -1,0 +1,96 @@
+run-name: Branch Tagging2
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write  # Required for pushing tags and creating releases  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_sha: ${{ secrets.GITHUB_SHA }}
+      - name: Parse PR for Release Information
+        id: parse_pr
+        run: |
+          # Extract version from PR title or package.json
+          if [[ "${{ github.event.pull_request.title }}" =~ Release.*([0-9]+\.[0-9]+(\.[0-9]+)?) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          
+          # Extract release title from PR
+          if [[ "${{ github.event.pull_request.title }}" =~ Release.*:\ *(.*) ]]; then
+            FEATURE_TITLE="${BASH_REMATCH[1]}"
+          else
+            FEATURE_TITLE="Production Update"
+          fi
+          
+          # Parse PR body for "What's New" section
+          PR_BODY="${{ github.event.pull_request.body }}"
+          WHATS_NEW=""
+          
+          if [[ "$PR_BODY" =~ '## What'\''s New'([\s\S]*?)($|##) ]]; then
+            WHATS_NEW="${BASH_REMATCH[1]}"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "feature_title=$FEATURE_TITLE" >> $GITHUB_OUTPUT
+          
+          # Format the what's new content to a file
+          echo "$WHATS_NEW" > whats_new.txt
+      
+      - name: Generate Release Notes
+        id: generate_notes
+        run: |
+          VERSION="${{ steps.parse_pr.outputs.version }}"
+          FEATURE_TITLE="${{ steps.parse_pr.outputs.feature_title }}"
+          WHATS_NEW=$(cat whats_new.txt)
+          
+          # Generate release notes in the format requested
+          cat > release_notes.md << EOF
+          # Release Notes - Version $VERSION: $FEATURE_TITLE
+          ## Overview
+          This release includes updates to the E-Vote electronic voting system. Below are the key updates for version $VERSION.
+          ---
+          ## Version $VERSION: $FEATURE_TITLE
+          ### What's New:
+          $WHATS_NEW
+          
+          ---
+          ## How to Use
+          ### Admins:
+          1. Log in to create elections under **New Election**.
+          2. Configure settings, upload candidates, and share the generated link.
+          3. Monitor results in the **Elections Dashboard**.
+          ### Voters:
+          1. Click the election link during voting hours.
+          2. Select candidate(s) and submit.
+          ---
+          ## Footer
+          <p style="text-align: center; color: #6c757d; font-size: 14px;">
+            &copy; $(date +"%Y") Resolve. All rights reserved.<br>
+            <a href="https://github.com/hngprojects/E-Vote-FE/releases" style="color: #007bff; text-decoration: none;" target="_blank" rel="noopener noreferrer">
+              View All Release Notes
+            </a>
+          </p>
+          EOF
+          
+      - name: Create GitHub Release
+        if: github.event_name != 'workflow_dispatch' || github.event.pull_request.merged == true
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.parse_pr.outputs.version }}
+          name: E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
