@@ -5,7 +5,7 @@ name: Release
       - main
   
 permissions:
-  contents: read # for checkout  
+  contents: write # for checkout  
 
 jobs:
   release:
@@ -37,4 +37,5 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpx semantic-release
