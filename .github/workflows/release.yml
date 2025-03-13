@@ -2,7 +2,7 @@ run-name: Branch Tagging
 on:
   push:
     branches:
-      - release
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
