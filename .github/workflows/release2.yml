@@ -8,53 +8,52 @@ on:
 
 permissions:
   contents: write  # Required for pushing tags and creating releases  
+
 jobs:
   release:
     if: github.event.pull_request.merged == true  # Ensures it runs only if PR is merged
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          commit_sha: ${{ secrets.GITHUB_SHA }}  # Fixed: GITHUB_SHA is not a secret
 
       - name: Parse PR for Release Information
         id: parse_pr
+        env:
+          PR_TITLE: "${{ github.event.pull_request.title }}"
+          PR_BODY: "${{ github.event.pull_request.body }}"
         run: |
-          
           # Extract release title from PR
-          if [[ "${{ github.event.pull_request.title }}" =~ Release.*:\ *(.*) ]]; then
+          if [[ "$PR_TITLE" =~ Release.*:\ *(.*) ]]; then
             FEATURE_TITLE="${BASH_REMATCH[1]}"
           else
             FEATURE_TITLE="Production Update"
           fi
-          
-          # Parse PR body for "What's New" section
-          PR_BODY="${{ github.event.pull_request.body }}"
-          WHATS_NEW=""
-          
-          if [[ "$PR_BODY" =~ '## What'\''s New'([\s\S]*?)($|##) ]]; then
-            WHATS_NEW="${BASH_REMATCH[1]}"
+
+          # Extract "What's New" section from PR body
+          WHATS_NEW=$(echo "$PR_BODY" | awk '/## What'\''s New/{flag=1; next} /## /{flag=0} flag')
+
+          # Fallback message if no "What's New" section is found
+          if [[ -z "$WHATS_NEW" ]]; then
+            WHATS_NEW="No significant updates mentioned in the PR."
           fi
-          
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "feature_title=$FEATURE_TITLE" >> $GITHUB_OUTPUT
-          
-          # Format the what's new content to a file
-          echo "$WHATS_NEW" > whats_new.txt
-      
+
+          echo "feature_title=$FEATURE_TITLE" >> $GITHUB_ENV
+          echo "whats_new<<EOF" >> $GITHUB_ENV
+          echo "$WHATS_NEW" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Generate Release Notes
-        id: generate_notes
         run: |
-          VERSION="${{ steps.parse_pr.outputs.version }}"
-          FEATURE_TITLE="${{ steps.parse_pr.outputs.feature_title }}"
-          WHATS_NEW=$(cat whats_new.txt)
-          
-          # Generate release notes in the format requested
+          VERSION="${{ steps.tag_version.outputs.new_tag }}"
+          FEATURE_TITLE="${{ env.feature_title }}"
+          WHATS_NEW="${{ env.whats_new }}"
+
           cat > release_notes.md << EOF
           # Release Notes - Version $VERSION: $FEATURE_TITLE
           ## Overview
@@ -63,7 +62,6 @@ jobs:
           ## Version $VERSION: $FEATURE_TITLE
           ### What's New:
           $WHATS_NEW
-          
           ---
           ## How to Use
           ### Admins:
@@ -82,13 +80,12 @@ jobs:
             </a>
           </p>
           EOF
-          
+
       - name: Create GitHub Release
-        if: github.event_name != 'workflow_dispatch' || github.event.pull_request.merged == true
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: "E-Vote v${{ steps.tag_version.outputs.new_tag }}: ${{ steps.parse_pr.outputs.feature_title }}"
+          name: "E-Vote v${{ steps.tag_version.outputs.new_tag }}: ${{ env.feature_title }}"
           bodyFile: release_notes.md
           draft: false
           prerelease: false
