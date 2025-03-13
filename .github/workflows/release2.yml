@@ -31,7 +31,7 @@ jobs:
         with:
           version: 9
       - name: Install depedencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile #this is demilade
       - name: Install semantic-release and plugins
         run: pnpm add semantic-release @semantic-release/git @semantic-release/github --save-dev
       - name: Release
