@@ -3,7 +3,7 @@
 This is an updated code from the original code: [AWS Three Tier Web Architecture Workshop](https://github.com/aws-samples/aws-three-tier-web-architecture-workshop/tree/main)
 
 
-## Application code
+## Application code reference
 This contains source codes for the `app-tier` and `web-tier`
 
 ## Getting Started
