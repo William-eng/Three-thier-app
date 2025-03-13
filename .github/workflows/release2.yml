@@ -85,7 +85,7 @@ jobs:
           
       - name: Create GitHub Release
         if: github.event_name != 'workflow_dispatch' || github.event.pull_request.merged == true
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: "E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}"
