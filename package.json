@@ -1,0 +1,20 @@
+{
+  "name": "three-thier-app",
+  "version": "1.0.0",
+  "description": "This is an updated code from the original code: [AWS Three Tier Web Architecture Workshop](https://github.com/aws-samples/aws-three-tier-web-architecture-workshop/tree/main)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/William-eng/Three-thier-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/William-eng/Three-thier-app/issues"
+  },
+  "homepage": "https://github.com/William-eng/Three-thier-app#readme"
+}
