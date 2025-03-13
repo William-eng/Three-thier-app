@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+permissions:
+  contents: write  # Required for pushing tags and creating releases  
 jobs:
   build:
     runs-on: ubuntu-latest
