@@ -88,8 +88,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: "E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}"
-          body: release_notes.md
+          name: "E-Vote v${{ steps.tag_version.outputs.new_tag }}: ${{ steps.parse_pr.outputs.feature_title }}"
+          body_path: release_notes.md
           draft: false
           prerelease: false
         env:
