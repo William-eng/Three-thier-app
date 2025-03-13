@@ -10,16 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+
+      - name: Generate Release Notes
+        run: |
+         # chmod +x generate-release-note.sh
+          ./generate-release-note.sh
+
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-      - name: Generate Release Notes
-        run: |
-          chmod +x generate-release-note.sh
-          ./generate-release-note.sh
 
       - name: Deploy to EC2
         run: |
