@@ -7,10 +7,12 @@ jobs:
   create-release-notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
+      
       - name: Create Release Notes
         uses: docker://decathlon/release-notes-generator-action:2.0.1
         env:
-          TOKEN: "$"
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
           OUTPUT_FOLDER: temp_release_notes
           USE_MILESTONE_TITLE: "true"
