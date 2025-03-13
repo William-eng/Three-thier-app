@@ -1,4 +1,4 @@
-name: Branch Tagging2
+run-name: Branch Tagging2
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          commit_sha: ${{ github.sha }}  # Fixed: GITHUB_SHA is not a secret
+          commit_sha: ${{ secrets.GITHUB_SHA }}
       - name: Parse PR for Release Information
         id: parse_pr
         run: |
@@ -84,13 +84,14 @@ jobs:
           EOF
           
       - name: Create GitHub Release
-        if: github.event_name != 'workflow_dispatch' || github.event.pull_request.merged == true
+        if: github.event_name != 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
         uses: softprops/action-gh-release@v1
         with:
-          tag: v${{ steps.parse_pr.outputs.version }}
-          name: "E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}"
-          body: release_notes.md
+          tag_name: v${{ steps.parse_pr.outputs.version }}
+          name: E-Vote v${{ steps.parse_pr.outputs.version }}: ${{ steps.parse_pr.outputs.feature_title }}
+          body_path: release-notes.md
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
