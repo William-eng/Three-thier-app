@@ -1,12 +1,11 @@
-name: Branch Tagging2
-on:
-  pull_request:
-    types:
-      - closed  # Runs only when a PR is closed (merged or not)
+name: Release
+"on":
+  push:
     branches:
       - main
+  
 permissions:
-  contents: write  # Required for pushing tags and creating releases  
+  contents: read # for checkout  
 
 jobs:
   release:
