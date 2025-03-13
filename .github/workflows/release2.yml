@@ -21,6 +21,6 @@ jobs:
       - name: Create Release Notes
         uses: docker://decathlon/release-notes-generator-action:2.0.1
         env:
-          TOKEN: ${{ secrets.TOKEN }}
+          TOKEN: "$"
           OUTPUT_FOLDER: temp_release_notes
           USE_MILESTONE_TITLE: "true"
