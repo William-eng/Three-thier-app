@@ -1,29 +1,53 @@
-name: Milestone Closure
-
+name: Branch Tagging2
 on:
-  push:
+  pull_request:
+    types:
+      - closed  # Runs only when a PR is closed (merged or not)
     branches:
       - main
-  milestone:
-    types: [closed]
-  workflow_dispatch:  # Allows manual execution for debugging
 
 permissions:
-  contents: write
-  issues: write
+  contents: write  # Required for pushing tags and creating releases  
 
 jobs:
-  create-release-notes:
+  release:
+    if: github.event.pull_request.merged == true  # Ensures it runs only if PR is merged
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
-      - name: Debug - Check if event triggers
-        run: echo "Workflow triggered by milestone closure, push, or manual run."
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Release Notes
-        uses: docker://decathlon/release-notes-generator-action:2.0.1
+      - name: Parse PR for Release Information
+        id: parse_pr
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OUTPUT_FOLDER: temp_release_notes
-          USE_MILESTONE_TITLE: "true"
+          PR_TITLE: "${{ github.event.pull_request.title }}"
+          PR_BODY: "${{ github.event.pull_request.body }}"
+        run: |
+          # Extract release title from PR
+          if [[ "$PR_TITLE" =~ Release.*:\ *(.*) ]]; then
+            FEATURE_TITLE="${BASH_REMATCH[1]}"
+          else
+            FEATURE_TITLE="Production Update"
+          fi
+
+          # Use the full PR body as release notes
+          echo "feature_title=$FEATURE_TITLE" >> $GITHUB_ENV
+          echo "pr_body<<EOF" >> $GITHUB_ENV
+          echo "$PR_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: "E-Vote v${{ steps.tag_version.outputs.new_tag }}: ${{ env.feature_title }}"
+          body: ${{ env.pr_body }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
