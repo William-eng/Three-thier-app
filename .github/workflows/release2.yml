@@ -4,7 +4,6 @@ on:
   milestone:
     types: [closed]
 
-
 permissions:
   contents: write
   issues: write
@@ -12,15 +11,16 @@ permissions:
 jobs:
   create-release-notes:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: true
     steps:
       - uses: actions/checkout@v4
-
-      - name: Debug - Check if event triggers
-        run: echo "Workflow triggered by milestone closure, push, or manual run."
-
+        with:
+          fetch-depth: 0  # This ensures all history is fetched, which might be needed
+      
       - name: Create Release Notes
         uses: docker://decathlon/release-notes-generator-action:2.0.1
         env:
-          TOKEN: "$"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OUTPUT_FOLDER: temp_release_notes
           USE_MILESTONE_TITLE: "true"
