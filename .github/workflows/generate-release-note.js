@@ -1,6 +1,6 @@
 // Use dynamic import for @octokit/rest
-import { Octokit } from '@octokit/rest';
-import fs from 'fs';
+const { Octokit } = require('@octokit/rest');
+const fs = require('fs');
 
 // Make this file an ES module by changing the import style
 // This function will be called once the module is loaded
