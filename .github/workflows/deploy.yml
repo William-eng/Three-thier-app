@@ -2,8 +2,8 @@ name: Deploy to EC2
 
 on:
   push:
-   branches: 
-     - main
+    branches: 
+      - main
   workflow_dispatch:
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # This ensures we get the full history for PR detection
+          fetch-depth: 0  # Ensures full history for PR detection
           
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -29,7 +29,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Execute the ES module script with Node
-          node --input-type=module .github/workflows/generate-release-note.js
+          node --input-type=module .github/workflows/generate-release-note.js | tee release-notes.md
+          
+      - name: Upload Release Notes as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-notes
+          path: release-notes.md
           
       - name: Set up SSH key
         run: |
@@ -40,9 +46,6 @@ jobs:
           
       - name: Deploy to EC2
         run: |
-          # Copy release notes to the server
-          scp -o StrictHostKeyChecking=no release-notes.md ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USERNAME }}/myapp/
-          
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
             # Define application directory
             APP_DIR="/home/${{ secrets.EC2_USERNAME }}/myapp"
