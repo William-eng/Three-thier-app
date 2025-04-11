@@ -1,0 +1,74 @@
+name: Build and Push Images
+on:
+  push:
+    branches: 
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install @octokit/rest
+        
+      # - name: Generate Release Notes
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     # Execute the ES module script with Node
+      #     node --input-type=module .github/workflows/generate-release-note.js | tee release-notes.md
+          
+      - name: Upload Release Notes as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+          
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: true
+          tags: willywan/3tierfrontend:v1.0,willywan/3tierfrontend:latest
+          
+      - name: Build and push backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          tags: willywan/3tierbackend:v1.0,willywan/3tierbackend:latest
+          
+      # # Optional: Update image tags in deployment files
+      # - name: Commit updated deployment files
+      #   run: |
+      #     git config --global user.name 'GitHub Actions'
+      #     git config --global user.email 'actions@github.com'
+      #     git add kubernetes/*.yaml || true
+      #     git commit -m "Update image tags [skip ci]" || true
+      #     git push
+          
+      # Trigger the deployment workflow
+      - name: Trigger Deploy Workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: deploy-event
