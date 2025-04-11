@@ -25,7 +25,7 @@ spec:
             - name: DB_DATABASE
               value: mydatabase
             - name: DB_HOST
-              value: mysql_db
+              value: mysql
             - name: DB_PWD
               value: Password.1
             - name: DB_USER
