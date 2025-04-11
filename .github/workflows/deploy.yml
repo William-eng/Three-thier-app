@@ -1,66 +1,66 @@
-name: Deploy to EC2
+# name: Deploy to EC2
 
-on:
-  push:
-    branches: 
-      - main
-  workflow_dispatch:
+# on:
+#   push:
+#     branches: 
+#       - main
+#   workflow_dispatch:
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
     
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Ensures full history for PR detection
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0  # Ensures full history for PR detection
           
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '18'
           
-      - name: Install dependencies
-        run: npm install @octokit/rest
+#       - name: Install dependencies
+#         run: npm install @octokit/rest
         
-      - name: Generate Release Notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Execute the ES module script with Node
-          node --input-type=module .github/workflows/generate-release-note.js | tee release-notes.md
+#       - name: Generate Release Notes
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           # Execute the ES module script with Node
+#           node --input-type=module .github/workflows/generate-release-note.js | tee release-notes.md
           
-      - name: Upload Release Notes as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-notes
-          path: release-notes.md
+#       - name: Upload Release Notes as Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: release-notes
+#           path: release-notes.md
           
-      - name: Deploy to EC2
-        run: |
-          sshpass -p "${{ secrets.EC2_SSH_PRIVATE_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
-            # Define application directory
-            APP_DIR="/home/${{ secrets.EC2_USERNAME }}/myapp"
+#       - name: Deploy to EC2
+#         run: |
+#           sshpass -p "${{ secrets.EC2_SSH_PRIVATE_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+#             # Define application directory
+#             APP_DIR="/home/${{ secrets.EC2_USERNAME }}/myapp"
             
-            # Create application directory if it doesn't exist
-            mkdir -p $APP_DIR
+#             # Create application directory if it doesn't exist
+#             mkdir -p $APP_DIR
             
-            # Navigate to application directory
-            cd $APP_DIR
+#             # Navigate to application directory
+#             cd $APP_DIR
             
-            # Clone or update repository
-            if [ -d "$APP_DIR/.git" ]; then
-              echo "Updating existing repository..."
-              git pull origin main
-            else
-              echo "Cloning repository..."
-              git clone https://github.com/${{ github.repository }}.git .
-            fi
+#             # Clone or update repository
+#             if [ -d "$APP_DIR/.git" ]; then
+#               echo "Updating existing repository..."
+#               git pull origin main
+#             else
+#               echo "Cloning repository..."
+#               git clone https://github.com/${{ github.repository }}.git .
+#             fi
             
-            # Run docker-compose
-            echo "Starting application with Docker Compose..."
-            docker compose down || true
-            docker compose up -d --build
+#             # Run docker-compose
+#             echo "Starting application with Docker Compose..."
+#             docker compose down || true
+#             docker compose up -d --build
             
-          EOF
+#           EOF
