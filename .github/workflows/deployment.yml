@@ -32,6 +32,20 @@ jobs:
               echo "Cloning repository..."
               git clone https://github.com/${{ github.repository }}.git .
             fi
+            # Install or reinstall K3s with proper permissions
+            echo "Installing/Reinstalling K3s with proper permissions..."
+            curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644 --disable=traefik
+            
+            # Wait for K3s to be ready
+            echo "Waiting for K3s to be ready..."
+            sleep 10
+            
+            # Fix kubeconfig permissions and setup
+            sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+            mkdir -p $HOME/.kube
+            sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+            sudo chown $(id -u):$(id -g) $HOME/.kube/config
+            export KUBECONFIG=$HOME/.kube/config
             
             # Login to Docker Hub to pull images if they're private
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
