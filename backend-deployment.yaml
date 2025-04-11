@@ -30,7 +30,7 @@ spec:
               value: Password.1
             - name: DB_USER
               value: willy
-          image: backend
+          image: willywan/3tierbackend:v1.0
           name: backend
           ports:
             - containerPort: 4000
